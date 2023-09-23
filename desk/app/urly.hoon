@@ -5,30 +5,6 @@
   $%  state-0
   ==
 +$  card  card:agent:gall
-++  redirect
-  |=  [eyre-id=@ta =url]
-    ^-  (list card:agent:gall)
-    =/  =response-header:http
-      :-  301
-      :~  ['Location' url]
-      ==
-    (give-http eyre-id response-header `(as-octs:mimes:html ~))
-::
-++  make-405
-  |=  eyre-id=@ta 
-  ^-  (list card:agent:gall)
-  =/  data=octs
-    (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>')
-  =/  content-length=@t
-    (crip ((d-co:co 1) p.data))
-  =/  =response-header:http
-    :-  405
-    :~  ['Content-Length' content-length]
-        ['Content-Type' 'text/html']
-        ['Allow' 'GET']
-    ==
-  (give-http eyre-id response-header `data)
-::
 ++  make-landing
   |=  eyre-id=@ta 
     ^-  (list card:agent:gall)
@@ -53,6 +29,30 @@
           ['Content-Type' 'text/html']
       ==
     (give-http eyre-id response-header `data)
+++  redirect
+  |=  [eyre-id=@ta =url]
+    ^-  (list card:agent:gall)
+    =/  =response-header:http
+      :-  301
+      :~  ['Location' url]
+      ==
+    (give-http eyre-id response-header `(as-octs:mimes:html ~))
+::
+++  make-405
+  |=  eyre-id=@ta 
+  ^-  (list card:agent:gall)
+  =/  data=octs
+    (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>')
+  =/  content-length=@t
+    (crip ((d-co:co 1) p.data))
+  =/  =response-header:http
+    :-  405
+    :~  ['Content-Length' content-length]
+        ['Content-Type' 'text/html']
+        ['Allow' 'GET']
+    ==
+  (give-http eyre-id response-header `data)
+::
 ++  give-http
   |=  [eyre-id=@ta =response-header:http data=(unit octs)]
   ^-  (list card)
@@ -91,40 +91,47 @@
 ::
 ++  on-poke
   |=  [=mark =vase]
+  |^ 
   ^-  (quip card _this)
-  ?+    mark  (on-poke:def mark vase)
-      %action
+  =^  cards  state
+    ?+  mark  (on-poke:def mark vase)
+      %action  (handle-action !<(action vase))
+      %handle-http-request  (handle-http !<([@ta inbound-request:eyre] vase))
+    ==
+  [cards this]
+  ++  handle-action
+    |=  =action
+    ^-  (quip card _state)
     :: only the host ship can manage URLs for now
     ::
     ?>  .=(our.bowl src.bowl)
-    =/  =action  !<(action vase)
+    =/  mapping-new
     ?-    -.action
         %shorten 
       =/  =url-alias  (crip (c-co:co (shaw 0 29 now.bowl)))
-      =/  mapping-new  (~(put by mapping.state) url-alias url.action)
-      `this(state state(mapping mapping-new))
+      (~(put by mapping.state) url-alias url.action)
         %shorten-custom
       ?:  (~(has by mapping.state) url-alias.action)  !!
-      =/  mapping-new  (~(put by mapping.state) url-alias.action url.action)
-      `this(state state(mapping mapping-new))
+      (~(put by mapping.state) url-alias.action url.action)
         %delete 
-      =/  mapping-new  (~(del by mapping.state) url-alias.action)
-      `this(state state(mapping mapping-new))
+      (~(del by mapping.state) url-alias.action)
     ==
-      %handle-http-request
-    =/  req  !<  (pair @ta inbound-request:eyre)  vase
-    ?+    method.request.q.req
-        :_  this
-        (make-405 p.req)
+    `state(mapping mapping-new)
+  ++  handle-http
+    |=  [id=@ta req=inbound-request:eyre]
+    ^-  (quip card _state)
+    ?+    method.request.req
+        :_  state
+        (make-405 id)
         %'GET'
-       =/  =url-alias  (crip q:(trim (lent "/urly/") (trip url.request.q.req))) 
+       =/  =url-alias  (crip q:(trim (lent "/urly/") (trip url.request.req))) 
        ?.    (~(has by mapping.state) url-alias)
-          :_  this
-          (make-landing p.req)
-        :_  this
-        (redirect p.req (~(got by mapping.state) url-alias))
-      ==
-  ==
+          :_  state
+          (make-landing id)
+        :_  state
+        (redirect id (~(got by mapping.state) url-alias))
+    ==
+  --
 ::
 ++  on-watch
   |=  =path
