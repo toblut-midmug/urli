@@ -12,11 +12,22 @@
       :-  301
       :~  ['Location' url]
       ==
-    :~
-      [%give %fact [/http-response/[eyre-id]]~ %http-response-header !>(response-header)]
-      [%give %fact [/http-response/[eyre-id]]~ %http-response-data !>(`(as-octs:mimes:html ~))]
-      [%give %kick [/http-response/[eyre-id]]~ ~]
+    (give-http eyre-id response-header `(as-octs:mimes:html ~))
+::
+++  make-405
+  |=  eyre-id=@ta 
+  ^-  (list card:agent:gall)
+  =/  data=octs
+    (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>')
+  =/  content-length=@t
+    (crip ((d-co:co 1) p.data))
+  =/  =response-header:http
+    :-  405
+    :~  ['Content-Length' content-length]
+        ['Content-Type' 'text/html']
+        ['Allow' 'GET']
     ==
+  (give-http eyre-id response-header `data)
 ::
 ++  make-landing
   |=  eyre-id=@ta 
@@ -41,12 +52,7 @@
       :~  ['Content-Length' content-length]
           ['Content-Type' 'text/html']
       ==
-    :~
-      [%give %fact [/http-response/[eyre-id]]~ %http-response-header !>(response-header)]
-      [%give %fact [/http-response/[eyre-id]]~ %http-response-data !>(`data)]
-      [%give %kick [/http-response/[eyre-id]]~ ~]
-    ==
-::
+    (give-http eyre-id response-header `data)
 ++  give-http
   |=  [eyre-id=@ta =response-header:http data=(unit octs)]
   ^-  (list card)
@@ -88,35 +94,28 @@
   ^-  (quip card _this)
   ?+    mark  (on-poke:def mark vase)
       %action
+    :: only the host ship can manage URLs for now
+    ::
+    ?>  .=(our.bowl src.bowl)
     =/  =action  !<(action vase)
     ?-    -.action
         %shorten 
       =/  =url-alias  (crip (c-co:co (shaw 0 29 now.bowl)))
       =/  mapping-new  (~(put by mapping.state) url-alias url.action)
       `this(state state(mapping mapping-new))
-        %shorten-custom  !!
-        %delete  !!
+        %shorten-custom
+      ?:  (~(has by mapping.state) url-alias.action)  !!
+      =/  mapping-new  (~(put by mapping.state) url-alias.action url.action)
+      `this(state state(mapping mapping-new))
+        %delete 
+      =/  mapping-new  (~(del by mapping.state) url-alias.action)
+      `this(state state(mapping mapping-new))
     ==
       %handle-http-request
     =/  req  !<  (pair @ta inbound-request:eyre)  vase
     ?+    method.request.q.req
-      =/  data=octs
-        (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>')
-      =/  content-length=@t
-        (crip ((d-co:co 1) p.data))
-      =/  =response-header:http
-        :-  405
-        :~  ['Content-Length' content-length]
-            ['Content-Type' 'text/html']
-            ['Allow' 'GET']
-        ==
-      :_  this
-      :~
-        [%give %fact [/http-response/[p.req]]~ %http-response-header !>(response-header)]
-        [%give %fact [/http-response/[p.req]]~ %http-response-data !>(`data)]
-        [%give %kick [/http-response/[p.req]]~ ~]
-        ==
-      ::
+        :_  this
+        (make-405 p.req)
         %'GET'
        =/  =url-alias  (crip q:(trim (lent "/urly/") (trip url.request.q.req))) 
        ?.    (~(has by mapping.state) url-alias)
@@ -142,10 +141,17 @@
   |=  =path  
   ^-  (unit (unit cage))
   ?+    path  (on-peek:def path)
-      [%x %resolve @ ~]  
-    =/  =url-alias  i.t.t.path
+    :: reslove URL
+    ::
+      [%x @ ~]  
+    =/  =url-alias  i.t.path
     =/  =url  (~(got by mapping.state) url-alias)
     ``noun+!>(url)
+    :: check short URL availability
+    ::
+      [%x %free @ ~]  
+    =/  =url-alias  i.t.t.path
+    ``noun+!>(?!((~(has by mapping.state) url-alias)))
   ==
 ++  on-agent  on-agent:def
 ::
