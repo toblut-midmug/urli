@@ -10,8 +10,12 @@
    ;meta(charset "utf-8", content "width=device-width, initial-scale=1");
   ==
  ;body
-   ;h1: Hi ... 
+   ;h1: %urly: A URL shortener 
    ;br;
+   ;form(method "post")
+     ;input(type "text", name "long-url");
+     ;button(type "submit", value "Submit"):"shorten"
+   ==
    ;br;
    ;table(class "center")
      ;*  (make-table m)

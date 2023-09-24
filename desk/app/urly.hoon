@@ -1,6 +1,6 @@
 /-  *urly
 /+  default-agent, dbug, server
-/=  index  /app/urly/index
+/=  index  /app/frontend/index
 |%
 +$  versioned-state
   $%  state-0
@@ -121,7 +121,6 @@
         %-  tail
         %+  rash  url.request.req
         ;~(sfix apat:de-purl:html yquy:de-purl:html)
-      ~&  path
       :: check auth and index page
       ::
       ?~  path
@@ -144,9 +143,9 @@
       =/  body=(unit octs)  body.request.req
       =/  headers=header-list:http  header-list.request.req
       =/  args  (molt (fall ?~(body ~ (rush q.u.body yquy:de-purl:html)) ~))
+      ~&  args
       =/  url-smol=(unit url-alias)  
             (~(get by args) 'delete') 
-      ~&  url-smol
       ?~  url-smol
         [(redirect eyre-id '/urly') state]
       =^  cards  state
