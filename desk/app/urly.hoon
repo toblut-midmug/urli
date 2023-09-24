@@ -1,46 +1,35 @@
 /-  *urly
 /+  default-agent, dbug, server
+/=  index  /app/urly/index
 |%
 +$  versioned-state
   $%  state-0
   ==
 +$  card  card:agent:gall
-++  make-landing
-  |=  eyre-id=@ta 
-    ^-  (list card:agent:gall)
-    =/  sail-data=manx
-      ;html
-        ;head
-          ;meta(charset "utf-8", content "width=device-width, initial-scale=1");
-         ==
-        ;body
-          ;h1: Hi ... 
-          ;br;
-          ;br;
-        ==
-      ==
-    =/  data=octs
-      (as-octs:mimes:html (crip (en-xml:html sail-data)))
-    =/  content-length=@t
-      (crip ((d-co:co 1) p.data))
-    =/  =response-header:http
-      :-  200
-      :~  ['Content-Length' content-length]
-          ['Content-Type' 'text/html']
-      ==
-    (give-http eyre-id response-header `data)
+++  login-redirect
+  |=  eyre-id=@ta
+  ^-  (list card)
+  (give-http eyre-id [307 ['Location' '/~/login?redirect='] ~] ~)
 ++  redirect
   |=  [eyre-id=@ta =url]
-    ^-  (list card:agent:gall)
-    =/  =response-header:http
-      :-  301
-      :~  ['Location' url]
-      ==
-    (give-http eyre-id response-header `(as-octs:mimes:html ~))
+  ^-  (list card)
+  =/  =response-header:http  [302 ~[['Location' url]]]
+  (give-http eyre-id response-header `(as-octs:mimes:html ~))
 ::
+++  make-200
+  |=  [eyre-id=@ta data=octs]
+  ^-  (list card)
+  =/  content-length=@t
+    (crip ((d-co:co 1) p.data))
+  =/  =response-header:http
+    :-  200
+    :~  ['Content-Length' content-length]
+        ['Content-Type' 'text/html']
+    ==
+  (give-http eyre-id response-header `data)
 ++  make-405
   |=  eyre-id=@ta 
-  ^-  (list card:agent:gall)
+  ^-  (list card)
   =/  data=octs
     (as-octs:mimes:html '<h1>405 Method Not Allowed</h1>')
   =/  content-length=@t
@@ -108,28 +97,61 @@
     =/  mapping-new
     ?-    -.action
         %shorten 
+      :: hash the long url to create a short one:
+      :: A 29 bit hash in base 58 ... is at most five characters long
+      ::
       =/  =url-alias  (crip (c-co:co (shaw 0 29 now.bowl)))
-      (~(put by mapping.state) url-alias url.action)
+      (~(put by url-map.state) url-alias url.action)
         %shorten-custom
-      ?:  (~(has by mapping.state) url-alias.action)  !!
-      (~(put by mapping.state) url-alias.action url.action)
+      ?:  (~(has by url-map.state) url-alias.action)  !!
+      (~(put by url-map.state) url-alias.action url.action)
         %delete 
-      (~(del by mapping.state) url-alias.action)
+      (~(del by url-map.state) url-alias.action)
     ==
-    `state(mapping mapping-new)
+    `state(url-map mapping-new)
   ++  handle-http
-    |=  [id=@ta req=inbound-request:eyre]
+    |=  [eyre-id=@ta req=inbound-request:eyre]
     ^-  (quip card _state)
-    ?+    method.request.req
-        :_  state
-        (make-405 id)
+    ?+    method.request.req  [(make-405 eyre-id) state]
         %'GET'
-       =/  =url-alias  (crip q:(trim (lent "/urly/") (trip url.request.req))) 
-       ?.    (~(has by mapping.state) url-alias)
-          :_  state
-          (make-landing id)
+      :: decode path c.f. https://github.com/urbit/docs-examples/blob/main/groups-app/bare-desk/app/squad.hoon#L69-L72
+      ::
+      =/  =path
+        %-  tail
+        %-  tail
+        %+  rash  url.request.req
+        ;~(sfix apat:de-purl:html yquy:de-purl:html)
+      ~&  path
+      :: check auth and index page
+      ::
+      ?~  path
+        ?.  authenticated.req
+          [(login-redirect eyre-id) state]
         :_  state
-        (redirect id (~(got by mapping.state) url-alias))
+        (make-200 eyre-id (index bowl url-map.state))
+      :: redirect either to resolved external url or back to index
+      ::
+      ?:  .=((lent path) 1) 
+        =/  =url-alias  (head path) 
+        ?.    (~(has by url-map.state) url-alias)
+           :_  state
+           (redirect eyre-id '/urly')
+        :_  state
+        (redirect eyre-id (~(got by url-map.state) url-alias))
+      :_  state
+      (redirect eyre-id '/urly')
+        %'POST'
+      =/  body=(unit octs)  body.request.req
+      =/  headers=header-list:http  header-list.request.req
+      =/  args  (molt (fall ?~(body ~ (rush q.u.body yquy:de-purl:html)) ~))
+      =/  url-smol=(unit url-alias)  
+            (~(get by args) 'delete') 
+      ~&  url-smol
+      ?~  url-smol
+        [(redirect eyre-id '/urly') state]
+      =^  cards  state
+        (handle-action [%delete `url`(need url-smol)])
+      [(weld cards (redirect eyre-id '/urly')) state]
     ==
   --
 ::
@@ -152,13 +174,13 @@
     ::
       [%x @ ~]  
     =/  =url-alias  i.t.path
-    =/  =url  (~(got by mapping.state) url-alias)
+    =/  =url  (~(got by url-map.state) url-alias)
     ``noun+!>(url)
     :: check short URL availability
     ::
       [%x %free @ ~]  
     =/  =url-alias  i.t.t.path
-    ``noun+!>(?!((~(has by mapping.state) url-alias)))
+    ``noun+!>(?!((~(has by url-map.state) url-alias)))
   ==
 ++  on-agent  on-agent:def
 ::

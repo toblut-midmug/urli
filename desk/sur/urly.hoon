@@ -1,8 +1,8 @@
 |%
 +$  url-alias  @t
 +$  url  @t
-+$  mapping  (map url-alias url)
-+$  state-0  [%0 =mapping]
++$  url-map  (map url-alias url)
++$  state-0  [%0 =url-map]
 +$  action 
   $%  [%shorten =url]
       [%shorten-custom =url-alias =url]
