@@ -97,7 +97,7 @@
     =/  mapping-new
     ?-    -.action
         %shorten 
-      :: hash the long url to create a short one:
+      :: hash the current time to create a short url:
       :: A 29 bit hash in base 58 ... is at most five characters long
       ::
       =/  =url-alias  (crip (c-co:co (shaw 0 29 now.bowl)))
@@ -143,13 +143,19 @@
       =/  body=(unit octs)  body.request.req
       =/  headers=header-list:http  header-list.request.req
       =/  args  (molt (fall ?~(body ~ (rush q.u.body yquy:de-purl:html)) ~))
-      ~&  args
-      =/  url-smol=(unit url-alias)  
-            (~(get by args) 'delete') 
-      ?~  url-smol
-        [(redirect eyre-id '/urly') state]
+      :: TODO: beautify argument handling
+      ::
+      ?.  .=(1 ~(wyt by args))
+        [(make-405 eyre-id) state]
+      =/  arg  (snag 0 ~(tap by args))
       =^  cards  state
-        (handle-action [%delete `url`(need url-smol)])
+      ?:  .=(p.arg 'delete')
+        =/  url-smol  (~(got by args) 'delete') 
+          (handle-action [%delete `url`url-smol])
+      ?:  .=(p.arg 'shorten')
+        =/  url-long  (~(got by args) 'shorten') 
+          (handle-action [%shorten `url`url-long])
+      [(make-405 eyre-id) state]
       [(weld cards (redirect eyre-id '/urly')) state]
     ==
   --
