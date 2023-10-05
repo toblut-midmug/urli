@@ -32,7 +32,9 @@
       ==
     ==
     ;td: {(trip url-alias)}
-    ;td: {(trip url)}
+    ;td
+      ;a(href "{(trip url)}"): {(trip url)}
+    ==
   ==
 ::
 ++  make-table
