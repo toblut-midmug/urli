@@ -13,6 +13,17 @@
   ::
   (crip (c-co:co (shaw 0 29 entropy)))
 ::
+++  ensure-url-scheme
+  :: Makes sure a URL has a scheme - adds "https://" if it doesn't.
+  :: TODO: replace with proper URL parsing
+  ::
+  |=  long-url=url
+  ^-  url
+  =/  scheme-idx  (find "://" (trip long-url))
+  ?~  scheme-idx
+    `url`(crip (weld "https://" (trip long-url)))
+  long-url
+::
 ++  login-redirect
   |=  eyre-id=@ta
   ^-  (list card)
@@ -107,10 +118,10 @@
     ?-    -.action
         %shorten 
       =/  =short-url  (generate-short-url eny.bowl)
-      (~(put by url-map.state) short-url url.action)
+      (~(put by url-map.state) short-url (ensure-url-scheme url.action))
         %shorten-custom
       ?:  (~(has by url-map.state) short-url.action)  !!
-      (~(put by url-map.state) short-url.action url.action)
+      (~(put by url-map.state) short-url.action (ensure-url-scheme url.action))
         %delete 
       (~(del by url-map.state) short-url.action)
     ==
