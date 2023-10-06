@@ -23,15 +23,15 @@
 ==
 ::
 ++  make-table-row
-  |=  [=url-alias =url]
+  |=  [=short-url =url]
   ^-  manx
   ;tr
     ;td
       ;form(method "post")
-        ;button(type "submit", name "delete", value "{(trip url-alias)}"):"✕"
+        ;button(type "submit", name "delete", value "{(trip short-url)}"):"✕"
       ==
     ==
-    ;td: {(trip url-alias)}
+    ;td: {(trip short-url)}
     ;td
       ;a(href "{(trip url)}"): {(trip url)}
     ==

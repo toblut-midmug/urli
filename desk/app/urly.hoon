@@ -8,7 +8,7 @@
 +$  card  card:agent:gall
 ++  generate-short-url
   |=  entropy=@
-  ^-  url-alias
+  ^-  short-url
   :: A 29 bit hash in base 58 ... is at most five characters long
   ::
   (crip (c-co:co (shaw 0 29 entropy)))
@@ -106,13 +106,13 @@
     =/  mapping-new
     ?-    -.action
         %shorten 
-      =/  =url-alias  (generate-short-url eny.bowl)
-      (~(put by url-map.state) url-alias url.action)
+      =/  =short-url  (generate-short-url eny.bowl)
+      (~(put by url-map.state) short-url url.action)
         %shorten-custom
-      ?:  (~(has by url-map.state) url-alias.action)  !!
-      (~(put by url-map.state) url-alias.action url.action)
+      ?:  (~(has by url-map.state) short-url.action)  !!
+      (~(put by url-map.state) short-url.action url.action)
         %delete 
-      (~(del by url-map.state) url-alias.action)
+      (~(del by url-map.state) short-url.action)
     ==
     `state(url-map mapping-new)
   ++  handle-http
@@ -137,12 +137,12 @@
       :: redirect either to resolved external url or back to index
       ::
       ?:  .=((lent path) 1) 
-        =/  =url-alias  (head path) 
-        ?.    (~(has by url-map.state) url-alias)
+        =/  =short-url  (head path) 
+        ?.    (~(has by url-map.state) short-url)
            :_  state
            (redirect eyre-id '/urly')
         :_  state
-        (redirect eyre-id (~(got by url-map.state) url-alias))
+        (redirect eyre-id (~(got by url-map.state) short-url))
       :_  state
       (redirect eyre-id '/urly')
         %'POST'
@@ -184,14 +184,14 @@
     :: reslove URL
     ::
       [%x @ ~]  
-    =/  =url-alias  i.t.path
-    =/  =url  (~(got by url-map.state) url-alias)
+    =/  =short-url  i.t.path
+    =/  =url  (~(got by url-map.state) short-url)
     ``noun+!>(url)
     :: check short URL availability
     ::
       [%x %free @ ~]  
-    =/  =url-alias  i.t.t.path
-    ``noun+!>(?!((~(has by url-map.state) url-alias)))
+    =/  =short-url  i.t.t.path
+    ``noun+!>(?!((~(has by url-map.state) short-url)))
   ==
 ++  on-agent  on-agent:def
 ::
