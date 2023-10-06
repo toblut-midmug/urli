@@ -145,7 +145,7 @@
           [(login-redirect eyre-id) state]
         :_  state
         (make-200 eyre-id (index bowl url-map.state))
-      :: redirect either to resolved external url or back to index
+      :: redirect either to the resolved external url or back to index
       ::
       ?:  .=((lent path) 1) 
         =/  =short-url  (head path) 
@@ -192,7 +192,7 @@
   |=  =path  
   ^-  (unit (unit cage))
   ?+    path  (on-peek:def path)
-    :: reslove URL
+    :: reslove short URL
     ::
       [%x @ ~]  
     =/  =short-url  i.t.path
