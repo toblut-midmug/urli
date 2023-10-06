@@ -6,10 +6,18 @@
   $%  state-0
   ==
 +$  card  card:agent:gall
+++  generate-short-url
+  |=  entropy=@
+  ^-  url-alias
+  :: A 29 bit hash in base 58 ... is at most five characters long
+  ::
+  (crip (c-co:co (shaw 0 29 entropy)))
+::
 ++  login-redirect
   |=  eyre-id=@ta
   ^-  (list card)
   (give-http eyre-id [307 ['Location' '/~/login?redirect='] ~] ~)
+::
 ++  redirect
   |=  [eyre-id=@ta =url]
   ^-  (list card)
@@ -27,6 +35,7 @@
         ['Content-Type' 'text/html']
     ==
   (give-http eyre-id response-header `data)
+::
 ++  make-405
   |=  eyre-id=@ta 
   ^-  (list card)
@@ -97,10 +106,7 @@
     =/  mapping-new
     ?-    -.action
         %shorten 
-      :: hash the current time to create a short url:
-      :: A 29 bit hash in base 58 ... is at most five characters long
-      ::
-      =/  =url-alias  (crip (c-co:co (shaw 0 29 now.bowl)))
+      =/  =url-alias  (generate-short-url eny.bowl)
       (~(put by url-map.state) url-alias url.action)
         %shorten-custom
       ?:  (~(has by url-map.state) url-alias.action)  !!
