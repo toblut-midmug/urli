@@ -19,6 +19,7 @@
    ==
    ;br;
    ;+  (make-table m)
+   ;script: {(trip script)}
  ==
 ==
 ::
@@ -39,6 +40,9 @@
         ==
         ;td: {(trip short-url)}
         ;td
+          ;button(type "button", onclick "clipboardcopy('{(trip short-url)}')"):"copy"
+        ==
+        ;td
           ;a(href "{(trip url)}"): {(trip url)}
         ==
       ==
@@ -52,4 +56,12 @@
     vertical-align: center;
   }
   '''
+::
+++  script
+  '''
+  function clipboardcopy(x) {
+    navigator.clipboard.writeText(window.location.href + "/" + x);
+  }
+  '''
+::
 --
