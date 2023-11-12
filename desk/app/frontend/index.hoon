@@ -1,4 +1,4 @@
-/-  *urly
+/-  *urli
 |=  [=bowl:gall m=url-map]
 |^  ^-  octs
 %-  as-octs:mimes:html 
@@ -11,7 +11,7 @@
    ;style: {(trip style)}
   ==
  ;body
-   ;h1: %urly: A URL shortener 
+   ;h1: %urli: A URL shortener 
    ;br;
    ;form(method "post")
      ;input(type "text", name "shorten");

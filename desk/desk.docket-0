@@ -1,11 +1,11 @@
 :~
-  title+'urly'
+  title+'urli'
   info+'A URL shortener'
   color+0xd2.4e35
   version+[0 1 0]
-  website+'https://github.com/toblut-midmug/urly'
+  website+'https://github.com/toblut-midmug/urli'
   license+'MIT'
-  base+'urly'
-  site+/urly
+  base+'urli'
+  site+/urli
 ==
 

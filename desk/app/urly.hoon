@@ -1,4 +1,4 @@
-/-  *urly
+/-  *urli
 /+  default-agent, dbug, server
 /=  index  /app/frontend/index
 |%
@@ -82,7 +82,7 @@
 ::
 ++  on-init
   ^-  (quip card _this)
-  %-  (slog leaf+"Attempting to bind /apps/urly" ~)
+  %-  (slog leaf+"Attempting to bind /apps/urli" ~)
   :_  this
   [%pass /eyre/connect %arvo %e %connect [~ /[dap.bowl]] dap.bowl]~
 ::
@@ -151,11 +151,11 @@
         =/  =short-url  (head path) 
         ?.    (~(has by url-map.state) short-url)
            :_  state
-           (redirect eyre-id '/urly')
+           (redirect eyre-id '/urli')
         :_  state
         (redirect eyre-id (~(got by url-map.state) short-url))
       :_  state
-      (redirect eyre-id '/urly')
+      (redirect eyre-id '/urli')
         %'POST'
       =/  body=(unit octs)  body.request.req
       =/  headers=header-list:http  header-list.request.req
@@ -173,7 +173,7 @@
         =/  url-long  (~(got by args) 'shorten') 
           (handle-action [%shorten `url`url-long])
       [(make-405 eyre-id) state]
-      [(weld cards (redirect eyre-id '/urly')) state]
+      [(weld cards (redirect eyre-id '/urli')) state]
     ==
   --
 ::
