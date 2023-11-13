@@ -36,11 +36,15 @@
 ::          ;input(type "checkbox", name "foo", value "{(trip short-url)}");
 ::        ==
         ;td
-          ;button(type "submit", name "delete", value "{(trip short-url)}"):"✕"
+          ;div(title "delete")
+            ;button(type "submit", name "delete", value "{(trip short-url)}"):"🗑️"   ::"✕"
+          ==
         ==
         ;td: {(trip short-url)}
         ;td
-          ;button(type "button", onclick "clipboardcopy('{(trip short-url)}')"):"copy"
+          ;div(title "copy")
+            ;button(type "button", onclick "clipboardcopy('{(trip short-url)}')"):"🔗"
+          ==
         ==
         ;td
           ;a(href "{(trip url)}"): {(trip url)}
