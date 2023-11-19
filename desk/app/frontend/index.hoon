@@ -26,10 +26,18 @@
 ++  make-table
   |=  m=url-map
   ^-  manx
+  ::  well, sorting the table each time the page is loaded does seem a
+  ::  bit wasteful ...
+  ::
+  =/  sorted-entries  
+    %+    sort  
+       ~(tap by m)
+    |=  [m=[k=short-url v=target-meta] n=[k=short-url v=target-meta]]
+    (gth created-last.v.m created-last.v.n)
   ;table
     ;form(method "post")
-    ;*  %+  turn  ~(tap by m)
-      |=  [=short-url =url]
+    ;*  %+  turn  sorted-entries 
+      |=  [=short-url =target-meta]
       ^-  manx 
       ;tr
 ::        ;td
@@ -47,7 +55,7 @@
           ==
         ==
         ;td
-          ;a(href "{(trip url)}"): {(trip url)}
+          ;a(href "{(trip url.target-meta)}"): {(trip url.target-meta)}
         ==
       ==
     ==

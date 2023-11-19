@@ -9,9 +9,9 @@
 ++  generate-short-url
   |=  entropy=@
   ^-  short-url
-  :: A 29 bit hash in base 58 ... is at most five characters long
+  :: Three base 58 digitis give 195.112 possible combinations
   ::
-  (crip (c-co:co (shaw 0 29 entropy)))
+  (crip (c-co:co (~(rad og entropy) 195.112)))
 ::
 ++  ensure-url-scheme
   :: Makes sure a URL has a scheme - adds "https://" if it doesn't.
@@ -114,18 +114,37 @@
     :: only the host ship can manage URLs for now
     ::
     ?>  .=(our.bowl src.bowl)
-    =/  mapping-new
     ?-    -.action
         %shorten 
-      =/  =short-url  (generate-short-url eny.bowl)
-      (~(put by url-map.state) short-url (ensure-url-scheme url.action))
-        %shorten-custom
-      ?:  (~(has by url-map.state) short-url.action)  !!
-      (~(put by url-map.state) short-url.action (ensure-url-scheme url.action))
+      =/  long-url  (ensure-url-scheme url.action)  
+      =/  short-url  (~(get by reverse-url-map.state) long-url)
+      ?.  =(~ short-url)
+        =/  old-meta  (~(got by url-map) (need short-url))
+        =/  mapping-new  (~(put by url-map) (need short-url) old-meta(created-last now.bowl))
+        `state(url-map mapping-new)
+      =/  short-url  (generate-short-url eny.bowl)
+      =/  mapping-new
+      %+    ~(put by url-map.state)
+        short-url
+      :*
+        url=long-url 
+        active=%.y 
+        created-first=now.bowl 
+        created-last=now.bowl 
+        hit-last=now.bowl 
+        hits-total=0
+      ==
+      =/  reverse-mapping-new  (~(put by reverse-url-map) long-url short-url)
+      `state(url-map mapping-new, reverse-url-map reverse-mapping-new)
+        :: TODO: implement
+        ::
+        %shorten-custom  !!
+::        %shorten-custom
+::      ?:  (~(has by url-map.state) short-url.action)  !!
+::      (~(put by url-map.state) short-url.action (ensure-url-scheme url.action))
         %delete 
-      (~(del by url-map.state) short-url.action)
+      `state(url-map (~(del by url-map.state) short-url.action))
     ==
-    `state(url-map mapping-new)
   ++  handle-http
     |=  [eyre-id=@ta req=inbound-request:eyre]
     ^-  (quip card _state)
@@ -153,7 +172,7 @@
            :_  state
            (redirect eyre-id '/urli')
         :_  state
-        (redirect eyre-id (~(got by url-map.state) short-url))
+        (redirect eyre-id url:(~(got by url-map.state) short-url))
       :_  state
       (redirect eyre-id '/urli')
         %'POST'
@@ -196,7 +215,7 @@
     ::
       [%x @ ~]  
     =/  =short-url  i.t.path
-    =/  =url  (~(got by url-map.state) short-url)
+    =/  =url  url:(~(got by url-map.state) short-url)
     ``noun+!>(url)
     :: check short URL availability
     ::
