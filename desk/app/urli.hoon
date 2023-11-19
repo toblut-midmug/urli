@@ -118,14 +118,24 @@
         %shorten 
       =/  long-url  (ensure-url-scheme url.action)  
       =/  short-url  (~(get by reverse-url-map.state) long-url)
+      :: if there exists a corresponding short url already, set it to
+      :: active and update its timestamp
+      ::
       ?.  =(~ short-url)
-        =/  old-meta  (~(got by url-map) (need short-url))
-        =/  mapping-new  (~(put by url-map) (need short-url) old-meta(created-last now.bowl))
-        `state(url-map mapping-new)
-      =/  short-url  (generate-short-url eny.bowl)
+        :-  ~
+        %=    state
+            url-map
+          %+  ~(jab by url-map)  
+            (need short-url)
+          |=(=target-meta target-meta(created-last now.bowl, active %.y))
+        ==
+      :: if there exists no corresponding short url, make a new
+      :: mapping
+      ::
+      =/  short-url-fresh  (generate-short-url eny.bowl)
       =/  mapping-new
       %+    ~(put by url-map.state)
-        short-url
+        short-url-fresh
       :*
         url=long-url 
         active=%.y 
@@ -134,8 +144,11 @@
         hit-last=now.bowl 
         hits-total=0
       ==
-      =/  reverse-mapping-new  (~(put by reverse-url-map) long-url short-url)
-      `state(url-map mapping-new, reverse-url-map reverse-mapping-new)
+      :-  ~
+      %=  state
+        url-map  mapping-new
+        reverse-url-map  (~(put by reverse-url-map) long-url short-url-fresh)
+      ==
         :: TODO: implement
         ::
         %shorten-custom  !!
