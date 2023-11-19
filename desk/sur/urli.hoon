@@ -14,7 +14,6 @@
 +$  state-0  [%0 =url-map =reverse-url-map]
 +$  action 
   $%  [%shorten =url]
-      [%shorten-custom =short-url =url]
       [%delete =short-url]
   ==
 --
