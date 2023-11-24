@@ -8,13 +8,13 @@
 ;html
  ;head
    ;meta(charset "utf-8", content "width=device-width, initial-scale=1");
-   ;style: {(trip style)}
+::   ;style: {(trip style)}
   ==
  ;body
    ;h1: %urli: A URL shortener 
    ;br;
    ;form(method "post")
-     ;input(type "text", name "shorten");
+     ;input(type "text", name "shorten", placeholder "enter url");
      ;button(type "submit", value "long-url"):"shorten"
    ==
    ;br;
@@ -34,29 +34,26 @@
        ~(tap by m)
     |=  [m=[k=short-url v=target-meta] n=[k=short-url v=target-meta]]
     (gth created-last.v.m created-last.v.n)
-  ;table
-    ;form(method "post")
-    ;*  %+  turn  sorted-entries 
-      |=  [=short-url =target-meta]
-      ^-  manx 
-      ;tr
-::        ;td
-::          ;input(type "checkbox", name "foo", value "{(trip short-url)}");
-::        ==
-        ;td
-          ;div(title "delete")
-            ;button(type "submit", name "delete", value "{(trip short-url)}"):"🗑️"   ::"✕"
+  ;form(method "post")
+    ;button(title "delete", type "submit", name "delete"):"🗑️"   ::"✕"
+    ;button(title "activate", type "submit", name "activate"):"▶️ "
+    ;button(title "deactivate", type "submit", name "deactivate"):"⏸️"
+    ;table
+      ;*  %+  turn  sorted-entries 
+        |=  [=short-url =target-meta]
+        ^-  manx 
+        ;tr
+          ;td
+            ;input(type "checkbox", name "check", id "{(trip short-url)}", value "{(trip short-url)}");
           ==
-        ==
-        ;td: {(trip short-url)}
-        ;td
-          ;div(title "copy")
-            ;button(type "button", onclick "clipboardcopy('{(trip short-url)}')"):"🔗"
+          ;td: {(trip short-url)}
+          ;td
+            ;button(title "copy", type "button", onclick "clipboardcopy('{(trip short-url)}')"):"🔗"
           ==
-        ==
-        ;td
-          ;a(href "{(trip url.target-meta)}"): {(trip url.target-meta)}
-        ==
+          ;td:  
+          ;td
+            ;a(href "{(trip url.target-meta)}"): {(trip url.target-meta)}
+          ==
       ==
     ==
   ==
