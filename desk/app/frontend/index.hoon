@@ -8,7 +8,6 @@
 ;html
  ;head
    ;meta(charset "utf-8", content "width=device-width, initial-scale=1");
-::   ;style: {(trip style)}
   ==
  ;body
    ;h1: %urli: A URL shortener 
@@ -57,14 +56,6 @@
       ==
     ==
   ==
-::
-++  style
-  '''
-  td {
-    height: 50px;
-    vertical-align: center;
-  }
-  '''
 ::
 ++  script
   '''
