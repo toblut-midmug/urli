@@ -1,5 +1,5 @@
 |%
-+$  short-url  @t
++$  short-url  @t ::TODO: rename to `short-id`; it's not really a URL...
 +$  url  @t
 +$  target-meta
   $:  =url
@@ -15,5 +15,7 @@
 +$  action 
   $%  [%shorten =url]
       [%delete =short-url]
+      [%activate =short-url]
+      [%deactivate =short-url]
   ==
 --

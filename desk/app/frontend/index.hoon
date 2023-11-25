@@ -37,6 +37,8 @@
     ;button(title "delete", type "submit", name "delete"):"🗑️"   ::"✕"
     ;button(title "activate", type "submit", name "activate"):"▶️ "
     ;button(title "deactivate", type "submit", name "deactivate"):"⏸️"
+    ;br;
+    ;br;
     ;table
       ;*  %+  turn  sorted-entries 
         |=  [=short-url =target-meta]
@@ -50,6 +52,7 @@
             ;button(title "copy", type "button", onclick "clipboardcopy('{(trip short-url)}')"):"🔗"
           ==
           ;td:  
+          ;td: {(a-co:co hits-total.target-meta)} 👁️
           ;td
             ;a(href "{(trip url.target-meta)}"): {(trip url.target-meta)}
           ==

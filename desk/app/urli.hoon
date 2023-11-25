@@ -149,14 +149,24 @@
         url-map  mapping-new
         reverse-url-map  (~(put by reverse-url-map) long-url short-url-fresh)
       ==
-        :: TODO: implement
-        ::
-        %shorten-custom  !!
-::        %shorten-custom
-::      ?:  (~(has by url-map.state) short-url.action)  !!
-::      (~(put by url-map.state) short-url.action (ensure-url-scheme url.action))
         %delete 
-      `state(url-map (~(del by url-map.state) short-url.action))
+      :-  ~ 
+      %=  state
+        url-map  (~(del by url-map) short-url.action)
+        reverse-url-map  (~(del by reverse-url-map) url:(~(got by url-map) short-url.action))
+      ==
+        %activate
+      :-  ~
+      %=  state  url-map
+        %+  ~(jab by url-map)  short-url.action
+        |=(=target-meta target-meta(active %.y))
+      ==
+        %deactivate
+      :-  ~
+      %=  state  url-map
+        %+  ~(jab by url-map)  short-url.action
+        |=(=target-meta target-meta(active %.n))
+      ==
     ==
   ++  handle-http
     |=  [eyre-id=@ta req=inbound-request:eyre]
@@ -179,32 +189,47 @@
         (make-200 eyre-id (index bowl url-map.state))
       :: redirect either to the resolved external url or back to index
       ::
-      ?:  .=((lent path) 1) 
-        =/  =short-url  (head path) 
-        ?.    (~(has by url-map.state) short-url)
-           :_  state
-           (redirect eyre-id '/urli')
-        :_  state
-        (redirect eyre-id url:(~(got by url-map.state) short-url))
-      :_  state
-      (redirect eyre-id '/urli')
+      ?.  .=((lent path) 1)  [(redirect eyre-id '/urli') state]
+      =/  =short-url  (head path) 
+      ?.  (~(has by url-map) short-url)  [(redirect eyre-id '/urli') state]
+      ?.  active:(~(got by url-map) short-url)  [(redirect eyre-id '/urli') state]
+      =/  hits-total  hits-total:(~(got by url-map) short-url)
+      :_  %=  state  url-map
+        %+  ~(jab by url-map)  short-url
+        |=(=target-meta target-meta(hit-last now.bowl, hits-total +(hits-total)))
+      ==
+      (redirect eyre-id url:(~(got by url-map) short-url))
         %'POST'
       =/  body=(unit octs)  body.request.req
       =/  headers=header-list:http  header-list.request.req
-      =/  args  (molt (fall ?~(body ~ (rush q.u.body yquy:de-purl:html)) ~))
+      =/  kvargs  (fall ?~(body ~ (rush q.u.body yquy:de-purl:html)) ~)
       :: TODO: beautify argument handling
       ::
-      ?.  .=(1 ~(wyt by args))
-        [(make-405 eyre-id) state]
-      =/  arg  (snag 0 ~(tap by args))
+      =/  arg  (snag 0 kvargs)
+      =/  arg-name  `@tas`-.arg
+      =/  checked-ids 
+        ^-  (list short-url)
+        %+  murn  (slag 1 kvargs)
+        |=  keyval=(pair @t @t)
+        ?:(=(p.keyval 'check') (some q.keyval) ~)
       =^  cards  state
-      ?:  .=(p.arg 'delete')
-        =/  url-smol  (~(got by args) 'delete') 
-          (handle-action [%delete `url`url-smol])
-      ?:  .=(p.arg 'shorten')
-        =/  url-long  (~(got by args) 'shorten') 
+        ?:  |(=(arg-name %delete) =(arg-name %activate) =(arg-name %deactivate))
+          %-  tail
+          %^    spin  checked-ids  `(quip card _state)`[~ state]
+            |=  [smol-id=short-url s=(quip card _state)]
+            ^-  [short-url (quip card _state)]
+            =.  state  +.s
+            =^  cards  state
+              ?+  arg-name  !!
+                %delete  (handle-action %delete smol-id) 
+                %activate  (handle-action %activate smol-id)
+                %deactivate  (handle-action %deactivate smol-id)
+              ==
+            [smol-id [(weld cards -.s) state]]
+        ?:  .=(arg-name 'shorten')
+          =/  url-long  +.arg 
           (handle-action [%shorten `url`url-long])
-      [(make-405 eyre-id) state]
+        [(make-405 eyre-id) state]
       [(weld cards (redirect eyre-id '/urli')) state]
     ==
   --
