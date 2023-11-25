@@ -47,6 +47,21 @@
     ==
   (give-http eyre-id response-header `data)
 ::
+++  make-404
+  |=  eyre-id=@ta 
+  ^-  (list card)
+  =/  data=octs
+    (as-octs:mimes:html '<h1>404 Not Found</h1>')
+  =/  content-length=@t
+    (crip ((d-co:co 1) p.data))
+  =/  =response-header:http
+    :-  404
+    :~  ['Content-Length' content-length]
+        ['Content-Type' 'text/html']
+        ['Allow' 'GET']
+    ==
+  (give-http eyre-id response-header `data)
+::
 ++  make-405
   |=  eyre-id=@ta 
   ^-  (list card)
@@ -129,8 +144,8 @@
             (need short-id)
           |=(=target-meta target-meta(created-last now.bowl, active %.y))
         ==
-      :: if there exists no corresponding short url, make a new
-      :: mapping
+      :: if there exists no corresponding short url, create a new short
+      :: id and update the key-value stores
       ::
       =/  short-id-fresh  (generate-short-id eny.bowl)
       =/  mapping-new
@@ -172,6 +187,7 @@
     |=  [eyre-id=@ta req=inbound-request:eyre]
     ^-  (quip card _state)
     ?+    method.request.req  [(make-405 eyre-id) state]
+    ::
         %'GET'
       :: decode path c.f. https://github.com/urbit/docs-examples/blob/main/groups-app/bare-desk/app/squad.hoon#L69-L72
       ::
@@ -180,25 +196,26 @@
         %-  tail
         %+  rash  url.request.req
         ;~(sfix apat:de-purl:html yquy:de-purl:html)
-      :: check auth and index page
+      :: if the path is empty, check auth and render index page
       ::
       ?~  path
         ?.  authenticated.req
           [(login-redirect eyre-id) state]
         :_  state
         (make-200 eyre-id (index bowl url-map.state))
-      :: redirect either to the resolved external url or back to index
+      :: redirect either to the resolved external url or to 404
       ::
-      ?.  .=((lent path) 1)  [(redirect eyre-id '/urli') state]
+      ?.  .=((lent path) 1)  [(make-404 eyre-id) state] 
       =/  =short-id  (head path) 
-      ?.  (~(has by url-map) short-id)  [(redirect eyre-id '/urli') state]
-      ?.  active:(~(got by url-map) short-id)  [(redirect eyre-id '/urli') state]
+      ?.  (~(has by url-map) short-id)  [(make-404 eyre-id) state]
+      ?.  active:(~(got by url-map) short-id)  [(make-404 eyre-id) state]
       =/  hits-total  hits-total:(~(got by url-map) short-id)
       :_  %=  state  url-map
         %+  ~(jab by url-map)  short-id
         |=(=target-meta target-meta(hit-last now.bowl, hits-total +(hits-total)))
       ==
       (redirect eyre-id url:(~(got by url-map) short-id))
+    ::
         %'POST'
       =/  body=(unit octs)  body.request.req
       =/  headers=header-list:http  header-list.request.req
@@ -228,6 +245,9 @@
             [smol-id [(weld cards -.s) state]]
         ?:  .=(arg-name 'shorten')
           =/  url-long  +.arg 
+          :: do nothing if the long url is empty
+          ::
+          ?:  =(url-long '')  `state
           (handle-action [%shorten `url`url-long])
         [(make-405 eyre-id) state]
       [(weld cards (redirect eyre-id '/urli')) state]
@@ -249,13 +269,13 @@
   |=  =path  
   ^-  (unit (unit cage))
   ?+    path  (on-peek:def path)
-    :: reslove short URL
+    :: reslove short ID
     ::
       [%x @ ~]  
     =/  =short-id  i.t.path
     =/  =url  url:(~(got by url-map.state) short-id)
     ``noun+!>(url)
-    :: check short URL availability
+    :: check short ID availability
     ::
       [%x %free @ ~]  
     =/  =short-id  i.t.t.path
