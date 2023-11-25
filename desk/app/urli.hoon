@@ -7,11 +7,19 @@
   ==
 +$  card  card:agent:gall
 ++  generate-short-id
-  |=  entropy=@
-  ^-  short-id
+  |=  [entropy=@ short-ids=(set short-id)]
+  ^-  (unit short-id)
+  =/  counter=@  0
+  |-
+  :: Try up to 100 times to find an unused short id
+  ::
+  ?:  .=(counter 100)  ~
   :: Three base 58 digitis give 195.112 possible combinations
   ::
-  (crip (c-co:co (~(rad og entropy) 195.112)))
+  =/  new-id=short-id  (crip (c-co:co (~(rad og (add entropy counter)) (pow 58 3))))
+  ?:  (~(has in short-ids) new-id)
+    $(counter +(counter))
+  (some new-id)
 ::
 ++  ensure-url-scheme
   :: Makes sure a URL has a scheme - adds "https://" if it doesn't.
@@ -146,10 +154,11 @@
         ==
       :: if there exists no corresponding short url, create a new short
       :: id and update the key-value stores
+      :: TODO: Explicitly handle a failure to create a new short id
       ::
-      =/  short-id-fresh  (generate-short-id eny.bowl)
+      =/  short-id-fresh  (need (generate-short-id eny.bowl ~(key by url-map)))
       =/  mapping-new
-      %+    ~(put by url-map.state)
+      %+    ~(put by url-map)
         short-id-fresh
       :*
         url=long-url 
@@ -237,6 +246,8 @@
             ^-  [short-id (quip card _state)]
             =.  state  +.s
             =^  cards  state
+              :: TODO: really bad eyesore! Get rid of it!
+              ::
               ?+  arg-name  !!
                 %delete  (handle-action %delete smol-id) 
                 %activate  (handle-action %activate smol-id)
