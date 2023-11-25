@@ -1,5 +1,5 @@
 |%
-+$  short-url  @t ::TODO: rename to `short-id`; it's not really a URL...
++$  short-id  @t
 +$  url  @t
 +$  target-meta
   $:  =url
@@ -9,13 +9,13 @@
       hit-last=@da
       hits-total=@ud
   ==
-+$  url-map  (map short-url target-meta)
-+$  reverse-url-map  (map url short-url)
++$  url-map  (map short-id target-meta)
++$  reverse-url-map  (map url short-id)
 +$  state-0  [%0 =url-map =reverse-url-map]
 +$  action 
   $%  [%shorten =url]
-      [%delete =short-url]
-      [%activate =short-url]
-      [%deactivate =short-url]
+      [%delete =short-id]
+      [%activate =short-id]
+      [%deactivate =short-id]
   ==
 --

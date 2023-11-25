@@ -31,7 +31,7 @@
   =/  sorted-entries  
     %+    sort  
        ~(tap by m)
-    |=  [m=[k=short-url v=target-meta] n=[k=short-url v=target-meta]]
+    |=  [m=[k=short-id v=target-meta] n=[k=short-id v=target-meta]]
     (gth created-last.v.m created-last.v.n)
   ;form(method "post")
     ;button(title "delete", type "submit", name "delete"):"🗑️"   ::"✕"
@@ -41,18 +41,21 @@
     ;br;
     ;table
       ;*  %+  turn  sorted-entries 
-        |=  [=short-url =target-meta]
+        |=  [=short-id =target-meta]
         ^-  manx 
         ;tr
           ;td
-            ;input(type "checkbox", name "check", id "{(trip short-url)}", value "{(trip short-url)}");
+            ;input(type "checkbox", name "check", id "{(trip short-id)}", value "{(trip short-id)}");
           ==
-          ;td: {(trip short-url)}
+          ;td: {(trip short-id)}
           ;td
-            ;button(title "copy", type "button", onclick "clipboardcopy('{(trip short-url)}')"):"🔗"
+            ;button(title "copy", type "button", onclick "clipboardcopy('{(trip short-id)}')"):"🔗"
           ==
           ;td:  
-          ;td: {(a-co:co hits-total.target-meta)} 👁️
+::          ;td(title "hits"): {(a-co:co hits-total.target-meta)} 👁️
+          ;+  ?:  active.target-meta
+                ;td(title "active"): 🔊
+              ;td(title "inactive"): 🔇
           ;td
             ;a(href "{(trip url.target-meta)}"): {(trip url.target-meta)}
           ==
@@ -62,8 +65,8 @@
 ::
 ++  script
   '''
-  function clipboardcopy(x) {
-    navigator.clipboard.writeText(window.location.href + "/" + x);
+  function clipboardcopy(shortid) {
+    navigator.clipboard.writeText(window.location.href + "/" + shortid);
   }
   '''
 ::

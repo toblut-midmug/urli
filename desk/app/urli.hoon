@@ -6,9 +6,9 @@
   $%  state-0
   ==
 +$  card  card:agent:gall
-++  generate-short-url
+++  generate-short-id
   |=  entropy=@
-  ^-  short-url
+  ^-  short-id
   :: Three base 58 digitis give 195.112 possible combinations
   ::
   (crip (c-co:co (~(rad og entropy) 195.112)))
@@ -117,25 +117,25 @@
     ?-    -.action
         %shorten 
       =/  long-url  (ensure-url-scheme url.action)  
-      =/  short-url  (~(get by reverse-url-map.state) long-url)
+      =/  short-id  (~(get by reverse-url-map.state) long-url)
       :: if there exists a corresponding short url already, set it to
       :: active and update its timestamp
       ::
-      ?.  =(~ short-url)
+      ?.  =(~ short-id)
         :-  ~
         %=    state
             url-map
           %+  ~(jab by url-map)  
-            (need short-url)
+            (need short-id)
           |=(=target-meta target-meta(created-last now.bowl, active %.y))
         ==
       :: if there exists no corresponding short url, make a new
       :: mapping
       ::
-      =/  short-url-fresh  (generate-short-url eny.bowl)
+      =/  short-id-fresh  (generate-short-id eny.bowl)
       =/  mapping-new
       %+    ~(put by url-map.state)
-        short-url-fresh
+        short-id-fresh
       :*
         url=long-url 
         active=%.y 
@@ -147,24 +147,24 @@
       :-  ~
       %=  state
         url-map  mapping-new
-        reverse-url-map  (~(put by reverse-url-map) long-url short-url-fresh)
+        reverse-url-map  (~(put by reverse-url-map) long-url short-id-fresh)
       ==
         %delete 
       :-  ~ 
       %=  state
-        url-map  (~(del by url-map) short-url.action)
-        reverse-url-map  (~(del by reverse-url-map) url:(~(got by url-map) short-url.action))
+        url-map  (~(del by url-map) short-id.action)
+        reverse-url-map  (~(del by reverse-url-map) url:(~(got by url-map) short-id.action))
       ==
         %activate
       :-  ~
       %=  state  url-map
-        %+  ~(jab by url-map)  short-url.action
+        %+  ~(jab by url-map)  short-id.action
         |=(=target-meta target-meta(active %.y))
       ==
         %deactivate
       :-  ~
       %=  state  url-map
-        %+  ~(jab by url-map)  short-url.action
+        %+  ~(jab by url-map)  short-id.action
         |=(=target-meta target-meta(active %.n))
       ==
     ==
@@ -190,15 +190,15 @@
       :: redirect either to the resolved external url or back to index
       ::
       ?.  .=((lent path) 1)  [(redirect eyre-id '/urli') state]
-      =/  =short-url  (head path) 
-      ?.  (~(has by url-map) short-url)  [(redirect eyre-id '/urli') state]
-      ?.  active:(~(got by url-map) short-url)  [(redirect eyre-id '/urli') state]
-      =/  hits-total  hits-total:(~(got by url-map) short-url)
+      =/  =short-id  (head path) 
+      ?.  (~(has by url-map) short-id)  [(redirect eyre-id '/urli') state]
+      ?.  active:(~(got by url-map) short-id)  [(redirect eyre-id '/urli') state]
+      =/  hits-total  hits-total:(~(got by url-map) short-id)
       :_  %=  state  url-map
-        %+  ~(jab by url-map)  short-url
+        %+  ~(jab by url-map)  short-id
         |=(=target-meta target-meta(hit-last now.bowl, hits-total +(hits-total)))
       ==
-      (redirect eyre-id url:(~(got by url-map) short-url))
+      (redirect eyre-id url:(~(got by url-map) short-id))
         %'POST'
       =/  body=(unit octs)  body.request.req
       =/  headers=header-list:http  header-list.request.req
@@ -208,7 +208,7 @@
       =/  arg  (snag 0 kvargs)
       =/  arg-name  `@tas`-.arg
       =/  checked-ids 
-        ^-  (list short-url)
+        ^-  (list short-id)
         %+  murn  (slag 1 kvargs)
         |=  keyval=(pair @t @t)
         ?:(=(p.keyval 'check') (some q.keyval) ~)
@@ -216,8 +216,8 @@
         ?:  |(=(arg-name %delete) =(arg-name %activate) =(arg-name %deactivate))
           %-  tail
           %^    spin  checked-ids  `(quip card _state)`[~ state]
-            |=  [smol-id=short-url s=(quip card _state)]
-            ^-  [short-url (quip card _state)]
+            |=  [smol-id=short-id s=(quip card _state)]
+            ^-  [short-id (quip card _state)]
             =.  state  +.s
             =^  cards  state
               ?+  arg-name  !!
@@ -252,14 +252,14 @@
     :: reslove short URL
     ::
       [%x @ ~]  
-    =/  =short-url  i.t.path
-    =/  =url  url:(~(got by url-map.state) short-url)
+    =/  =short-id  i.t.path
+    =/  =url  url:(~(got by url-map.state) short-id)
     ``noun+!>(url)
     :: check short URL availability
     ::
       [%x %free @ ~]  
-    =/  =short-url  i.t.t.path
-    ``noun+!>(?!((~(has by url-map.state) short-url)))
+    =/  =short-id  i.t.t.path
+    ``noun+!>(?!((~(has by url-map.state) short-id)))
   ==
 ++  on-agent  on-agent:def
 ::
