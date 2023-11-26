@@ -235,7 +235,6 @@
     ::
         %'POST'
       =/  body=(unit octs)  body.request.req
-      =/  headers=header-list:http  header-list.request.req
       =/  kvargs  (fall ?~(body ~ (rush q.u.body yquy:de-purl:html)) ~)
       :: TODO: beautify argument handling
       ::
@@ -254,15 +253,13 @@
             ^-  [short-id (quip card _state)]
             =.  state  +.s
             =^  cards  state
-              :: TODO: really bad eyesore! Get rid of it!
-              ::
               ?+  arg-name  !!
                 %delete  (handle-action %delete smol-id) 
                 %activate  (handle-action %activate smol-id)
                 %deactivate  (handle-action %deactivate smol-id)
               ==
             [smol-id [(weld cards -.s) state]]
-        ?:  .=(arg-name 'shorten')
+        ?:  .=(arg-name %shorten)
           =/  url-long  +.arg 
           :: do nothing if the long url is empty
           ::
