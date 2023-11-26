@@ -113,7 +113,6 @@
 ::
 ++  on-init
   ^-  (quip card _this)
-  %-  (slog leaf+"Attempting to bind /apps/urli" ~)
   :_  this
   [%pass /eyre/connect %arvo %e %connect [~ /[dap.bowl]] dap.bowl]~
 ::

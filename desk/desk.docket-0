@@ -1,8 +1,8 @@
 :~
   title+'urli'
   info+'A URL shortener'
-  color+0xd2.4e35
-  version+[0 1 0]
+  color+0xdd
+  version+[0 0 1]
   website+'https://github.com/toblut-midmug/urli'
   license+'MIT'
   base+'urli'
