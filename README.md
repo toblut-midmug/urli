@@ -11,7 +11,7 @@ copy to clipboard button.
 ## Installation
 
 ```
-|install %urli ~dister-toblut-midmug
+|install ~dister-toblut-midmug %urli
 ```
 
 
