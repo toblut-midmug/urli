@@ -25,7 +25,7 @@
 ++  make-table
   |=  m=url-map
   ^-  manx
-  ::  well, sorting the table each time the page is loaded does seem a
+  ::  well, sorting the table every time the page is loaded does seem a
   ::  bit wasteful ...
   ::
   =/  sorted-entries  
@@ -47,15 +47,20 @@
           ;td
             ;input(type "checkbox", name "check", id "{(trip short-id)}", value "{(trip short-id)}");
           ==
-          ;td: {(trip short-id)}
+::          ;td: {(trip short-id)}
+         ;td
+            ;+  ?:  active.target-meta
+                  ;span(title "active"): {(trip short-id)}
+                ;s(title "inactive"): {(trip short-id)}
+          ==
           ;td
             ;button(title "copy", type "button", onclick "clipboardcopy('{(trip short-id)}')"):"🔗"
           ==
-          ;td:  
+        ;td:  
 ::          ;td(title "hits"): {(a-co:co hits-total.target-meta)} 👁️
-          ;+  ?:  active.target-meta
-                ;td(title "active"): 🔊
-              ;td(title "inactive"): 🔇
+::          ;+  ?:  active.target-meta
+::                ;td(title "active"): 🔊
+::              ;td(title "inactive"): 🔇
           ;td
             ;a(href "{(trip url.target-meta)}"): {(trip url.target-meta)}
           ==
