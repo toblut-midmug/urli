@@ -6,17 +6,25 @@
   $%  state-0
   ==
 +$  card  card:agent:gall
+++  render-base-58-id
+    ::  renders an atom as base 58 with a minimum length of 3.
+    ::  c.f. https://docs.urbit.org/language/hoon/reference/stdlib/4k#c-coco
+    ::
+    |=  a=@
+    ^-  tape
+    ((em-co:co [58 3] |=([? b=@ c=tape] [~(c ne b) c])) a)
 ++  generate-short-id
   |=  [entropy=@ short-ids=(set short-id)]
   ^-  (unit short-id)
   =/  counter=@  0
   |-
-  :: Try up to 100 times to find an unused short id
+  :: Try up to 100 times to find an unused short ID
   ::
   ?:  .=(counter 100)  ~
-  :: Three base 58 digitis give 195.112 possible combinations
+  :: Three base 58 digitis give 58^3=195112 possible combinations
   ::
-  =/  new-id=short-id  (crip (c-co:co (~(rad og (add entropy counter)) (pow 58 3))))
+  =/  new-id-num  (~(rad og (add entropy counter)) (pow 58 3))
+  =/  new-id=short-id  (crip (render-base-58-id new-id-num))
   ?:  (~(has in short-ids) new-id)
     $(counter +(counter))
   (some new-id)
@@ -141,7 +149,7 @@
         %shorten 
       =/  long-url  (ensure-url-scheme url.action)  
       =/  short-id  (~(get by reverse-url-map.state) long-url)
-      :: if there exists a corresponding short url already, set it to
+      :: if there exists a corresponding short ID already, set it to
       :: active and update its timestamp
       ::
       ?.  =(~ short-id)
@@ -152,8 +160,8 @@
             (need short-id)
           |=(=target-meta target-meta(created-last now.bowl, active %.y))
         ==
-      :: if there exists no corresponding short url, create a new short
-      :: id and update the key-value stores
+      :: if there exists no corresponding short ID, create a new one
+      :: and update the key-value stores.
       :: TODO: Explicitly handle a failure to create a new short id
       ::
       =/  short-id-fresh  (need (generate-short-id eny.bowl ~(key by url-map)))
@@ -280,7 +288,7 @@
   |=  =path  
   ^-  (unit (unit cage))
   ?+    path  (on-peek:def path)
-    :: reslove short ID
+    :: resolve short ID
     ::
       [%x @ ~]  
     =/  =short-id  i.t.path
